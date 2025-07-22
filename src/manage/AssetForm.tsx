@@ -11,12 +11,12 @@ interface AssetFormProps {
 
 const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoading = false, initialData = {} }) => {
   const [institution, setInstitution] = useState(initialData.institution || '');
-  const [type, setType] = useState<AssetType | string>(initialData.type || AssetType.Stocks);
+  const [type, setType] = useState<AssetType | string>(initialData.type || AssetType.Stock);
   const [symbol, setSymbol] = useState(initialData.symbol || '');
   const [quantity, setQuantity] = useState(initialData.quantity || '');
   const [error, setError] = useState('');
 
-  const isSymbolType = type === AssetType.Stocks || type === AssetType.Bonds || type === AssetType.Crypto;
+  const isSymbolType = type === AssetType.Stock || type === AssetType.Bonds || type === AssetType.Crypto;
   const isCrypto = type === AssetType.Crypto;
   const isCurrencyInputType = type === AssetType.Cash || type === AssetType.BankDeposit || type === AssetType.Pension;
 
