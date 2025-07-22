@@ -9,6 +9,7 @@ import { collection, onSnapshot, deleteDoc, doc, addDoc, serverTimestamp, update
 import AssetForm from '../manage/AssetForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AssetGrid from '../components/AssetGrid';
+import { getStockCurrency } from '../api/prices';
 
 const Manage: React.FunctionComponent = () => {
   const [user] = useAuthState(auth);
@@ -59,6 +60,10 @@ const Manage: React.FunctionComponent = () => {
     setFormLoading(true);
     try {
       let finalCurrency = inferCurrency(assetData.type, assetData.symbol);
+      if (assetData.type === 'Stock' && assetData.symbol) {
+        const stockCurrency = await getStockCurrency(assetData.symbol);
+        if (stockCurrency) finalCurrency = stockCurrency;
+      }
       const cleanedData = Object.fromEntries(
         Object.entries({ ...assetData, currency: finalCurrency }).filter(([_, v]) => v !== undefined)
       );
@@ -79,6 +84,12 @@ const Manage: React.FunctionComponent = () => {
     setFormLoading(true);
     try {
       let finalCurrency = inferCurrency(assetData.type, assetData.symbol);
+      if (assetData.type === 'Stock' && assetData.symbol) {
+        console.log("Symbol: " + assetData.symbol)
+        const stockCurrency = await getStockCurrency(assetData.symbol);
+        console.log("Currency: " + stockCurrency)
+        if (stockCurrency) finalCurrency = stockCurrency;
+      }
       const cleanedData = Object.fromEntries(
         Object.entries({ ...assetData, currency: finalCurrency }).filter(([_, v]) => v !== undefined)
       );
