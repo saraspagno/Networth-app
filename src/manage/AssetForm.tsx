@@ -14,31 +14,37 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
   const [type, setType] = useState<AssetType | string>(initialData.type || AssetType.Stocks);
   const [symbol, setSymbol] = useState(initialData.symbol || '');
   const [quantity, setQuantity] = useState(initialData.quantity || '');
-  const [amount, setAmount] = useState(initialData.amount || '');
-  const [currency, setCurrency] = useState(initialData.currency || 'USD');
   const [error, setError] = useState('');
 
   const isSymbolType = type === AssetType.Stocks || type === AssetType.Bonds || type === AssetType.Crypto;
+  const isCrypto = type === AssetType.Crypto;
+  const isCurrencyInputType = type === AssetType.Cash || type === AssetType.BankDeposit || type === AssetType.Pension;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!institution) return setError('Institution is required');
     if (!type) return setError('Type is required');
+    if (!symbol) return setError('Symbol is required');
+    if (!quantity || isNaN(Number(quantity))) return setError('Quantity is required and must be a number');
+    let finalSymbol = symbol;
+    let finalCurrency = '';
     if (isSymbolType) {
-      if (!symbol) return setError('Symbol is required');
-      if (!quantity || isNaN(Number(quantity))) return setError('Quantity is required and must be a number');
-    } else {
-      if (!amount || isNaN(Number(amount))) return setError('Amount is required and must be a number');
-      if (!currency) return setError('Currency is required');
+      if (isCrypto) {
+        finalCurrency = 'USD';
+      } else {
+        // For stocks, bonds, etc. infer currency from symbol (could be improved with a lookup)
+        finalCurrency = '';
+      }
+    } else if (isCurrencyInputType) {
+      finalCurrency = symbol;
     }
     onSubmit({
       institution,
       type,
-      symbol: isSymbolType ? symbol : undefined,
-      quantity: isSymbolType ? Number(quantity) : undefined,
-      amount: !isSymbolType ? Number(amount) : undefined,
-      currency: !isSymbolType ? currency : undefined,
+      symbol: finalSymbol,
+      quantity: Number(quantity),
+      currency: finalCurrency || undefined,
     });
   };
 
@@ -79,55 +85,27 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
               ))}
             </select>
           </div>
-          {isSymbolType ? (
-            <>
-              <div>
-                <label className="block mb-1 font-medium">Symbol</label>
-                <input
-                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-                  value={symbol}
-                  onChange={e => setSymbol(e.target.value)}
-                  required={isSymbolType}
-                />
-              </div>
-              <div>
-                <label className="block mb-1 font-medium">Quantity</label>
-                <input
-                  type="number"
-                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-                  value={quantity}
-                  onChange={e => setQuantity(e.target.value)}
-                  required={isSymbolType}
-                  min="0"
-                  step="any"
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <div>
-                <label className="block mb-1 font-medium">Amount</label>
-                <input
-                  type="number"
-                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  required={!isSymbolType}
-                  min="0"
-                  step="any"
-                />
-              </div>
-              <div>
-                <label className="block mb-1 font-medium">Currency</label>
-                <input
-                  className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-                  value={currency}
-                  onChange={e => setCurrency(e.target.value)}
-                  required={!isSymbolType}
-                />
-              </div>
-            </>
-          )}
+          <div>
+            <label className="block mb-1 font-medium">Symbol</label>
+            <input
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
+              value={symbol}
+              onChange={e => setSymbol(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-medium">Quantity</label>
+            <input
+              type="number"
+              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
+              value={quantity}
+              onChange={e => setQuantity(e.target.value)}
+              required={isSymbolType}
+              min="0"
+              step="any"
+            />
+          </div>
           <div className="flex gap-4 justify-end">
             <button type="button" className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300" onClick={onClose} disabled={formLoading}>
               Cancel

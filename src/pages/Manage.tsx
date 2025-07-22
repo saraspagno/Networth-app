@@ -7,8 +7,8 @@ import { Asset, ASSETS_COLLECTION } from '../types/asset';
 import { USERS_COLLECTION } from '../types/user';
 import { collection, onSnapshot, deleteDoc, doc, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import AssetForm from '../manage/AssetForm';
-import AssetRow from '../manage/AssetRow';
 import LoadingSpinner from '../components/LoadingSpinner';
+import AssetGrid from '../components/AssetGrid';
 
 const Manage: React.FunctionComponent = () => {
   const [user] = useAuthState(auth);
@@ -49,13 +49,18 @@ const Manage: React.FunctionComponent = () => {
     await deleteDoc(doc(db, USERS_COLLECTION, user.uid, ASSETS_COLLECTION, id));
   };
 
+  const inferCurrency = (type: string, symbol?: string) =>
+    type === 'Crypto' ? 'USD' :
+    ['Cash', 'Deposit', 'Pension'].includes(type) ? symbol || '' : '';
+
   const handleAddAsset = async (assetData: Omit<Asset, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user) return;
     setShowForm(false); // Close modal immediately
     setFormLoading(true);
     try {
+      let finalCurrency = inferCurrency(assetData.type, assetData.symbol);
       const cleanedData = Object.fromEntries(
-        Object.entries(assetData).filter(([_, v]) => v !== undefined)
+        Object.entries({ ...assetData, currency: finalCurrency }).filter(([_, v]) => v !== undefined)
       );
       await addDoc(collection(db, USERS_COLLECTION, user.uid, ASSETS_COLLECTION), {
         ...cleanedData,
@@ -73,8 +78,9 @@ const Manage: React.FunctionComponent = () => {
     setShowForm(false); // Close modal immediately
     setFormLoading(true);
     try {
+      let finalCurrency = inferCurrency(assetData.type, assetData.symbol);
       const cleanedData = Object.fromEntries(
-        Object.entries(assetData).filter(([_, v]) => v !== undefined)
+        Object.entries({ ...assetData, currency: finalCurrency }).filter(([_, v]) => v !== undefined)
       );
       await updateDoc(
         doc(db, USERS_COLLECTION, user.uid, ASSETS_COLLECTION, formInitialData.id),
@@ -111,31 +117,7 @@ const Manage: React.FunctionComponent = () => {
           ) : assets.length === 0 ? (
             <div>No assets found.</div>
           ) : (
-            <table className="min-w-full table-auto border-collapse">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="px-4 py-2 border text-left">Institution</th>
-                  <th className="px-4 py-2 border text-left">Type</th>
-                  <th className="px-4 py-2 border text-left">Symbol</th>
-                  <th className="px-4 py-2 border text-left">Amount</th>
-                  <th className="px-4 py-2 border text-left">Currency</th>
-                  <th className="px-4 py-2 border text-left"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {assets.map(asset => (
-                  <AssetRow
-                    key={asset.id}
-                    asset={asset}
-                    onDelete={handleDelete}
-                    onEdit={() => {
-                      setFormInitialData(asset);
-                      setShowForm(true);
-                    }}
-                  />
-                ))}
-              </tbody>
-            </table>
+            <AssetGrid assets={assets} onEdit={asset => { setFormInitialData(asset); setShowForm(true); }} onDelete={handleDelete} />
           )}
         </div>
         {/* Show spinner over content when form is saving and modal is closed */}
