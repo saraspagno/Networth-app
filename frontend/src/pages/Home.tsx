@@ -2,20 +2,15 @@ import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { ChartToggle, NetworthByType, NetworthByInstitution, NetworthByCurrency } from '../components/charts';
-import { useAssets } from '../hooks/useAssets';
-import { useDisplayAssets } from '../hooks/useDisplayAssets';
+import { useDisplayAssets } from '../contexts/DisplayAssetsContext';
 import { useNetworthData } from '../hooks/useNetworthData';
-import { auth } from '../types/firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
 
 const Home: React.FunctionComponent = () => {
   const [isPieChart, setIsPieChart] = useState(true);
-  const [user] = useAuthState(auth);
-  const { assets, loading } = useAssets(user);
-  const displayAssets = useDisplayAssets(assets);
+  const { displayAssets, isLoading } = useDisplayAssets();
   const { totalNetworth, typeData, institutionData, currencyData } = useNetworthData(displayAssets);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen bg-gray-100">
         <Sidebar />
@@ -28,7 +23,7 @@ const Home: React.FunctionComponent = () => {
     );
   }
 
-  if (!assets || assets.length === 0) {
+  if (!displayAssets || displayAssets.length === 0) {
     return (
       <div className="flex min-h-screen bg-gray-100">
         <Sidebar />

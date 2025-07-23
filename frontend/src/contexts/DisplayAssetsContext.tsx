@@ -1,18 +1,44 @@
-import { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Asset, AssetType, getCurrencySymbol } from '../types/asset';
 import { getStockAmount, getCryptoAmount } from '../api/prices';
 
-export function useDisplayAssets(assets: Asset[]) {
+interface DisplayAssetsContextType {
+  displayAssets: Asset[];
+  isLoading: boolean;
+  refreshAssets: () => void;
+}
+
+const DisplayAssetsContext = createContext<DisplayAssetsContextType | undefined>(undefined);
+
+export const useDisplayAssets = () => {
+  const context = useContext(DisplayAssetsContext);
+  if (!context) {
+    throw new Error('useDisplayAssets must be used within a DisplayAssetsProvider');
+  }
+  return context;
+};
+
+interface DisplayAssetsProviderProps {
+  children: React.ReactNode;
+  assets: Asset[];
+}
+
+export const DisplayAssetsProvider: React.FC<DisplayAssetsProviderProps> = ({ children, assets }) => {
   const [displayAssets, setDisplayAssets] = useState<Asset[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-    let interval: NodeJS.Timeout;
+  const updateAmounts = useCallback(async () => {
+    if (assets.length === 0) {
+      setDisplayAssets([]);
+      return;
+    }
 
-    async function updateAmounts() {
+    setIsLoading(true);
+    try {
       const updated = await Promise.all(assets.map(async asset => {
         let amountStr: string = '';
         let amountNum: number | undefined = undefined;
+        
         if (asset.type === AssetType.Stock || asset.type === AssetType.Bonds) {
           if (asset.symbol && asset.quantity != null) {
             amountNum = await getStockAmount(asset.symbol, asset.quantity) || undefined;
@@ -28,25 +54,45 @@ export function useDisplayAssets(assets: Asset[]) {
         ) {
           amountNum = asset.quantity;
         }
+        
         if (typeof amountNum === 'number') {
           amountNum = Math.round(amountNum * 100) / 100;
           amountStr = getCurrencySymbol(asset.currency) + amountNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         } else {
-          // Provide a default string when amount is not available
           amountStr = getCurrencySymbol(asset.currency) + '0.00';
         }
+        
         return { ...asset, amount: amountStr };
       }));
-      if (isMounted) setDisplayAssets(updated);
+      
+      setDisplayAssets(updated);
+    } catch (error) {
+      console.error('Error updating asset amounts:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    updateAmounts();
-    interval = setInterval(updateAmounts, 60000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
   }, [assets]);
 
-  return displayAssets;
-} 
+  const refreshAssets = () => {
+    updateAmounts();
+  };
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    updateAmounts();
+    
+    // Set up interval for auto-refresh every 60 seconds
+    interval = setInterval(updateAmounts, 60000);
+    
+    return () => {
+      clearInterval(interval);
+    };
+  }, [updateAmounts]);
+
+  return (
+    <DisplayAssetsContext.Provider value={{ displayAssets, isLoading, refreshAssets }}>
+      {children}
+    </DisplayAssetsContext.Provider>
+  );
+}; 

@@ -6,14 +6,19 @@ import { Asset } from '../types/asset';
 import AssetForm from '../manage/AssetForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AssetGrid from '../components/AssetGrid';
-import { useAssets } from '../hooks/useAssets';
-import { useDisplayAssets } from '../hooks/useDisplayAssets';
+import { useDisplayAssets } from '../contexts/DisplayAssetsContext';
 import { addAsset, editAsset } from '../manage/assetController';
+import { useAssets } from '../hooks/useAssets';
 
 const Manage: React.FunctionComponent = () => {
   const [user] = useAuthState(auth);
-  const { assets, loading, handleDelete } = useAssets(user);
-  const displayAssets = useDisplayAssets(assets);
+  const { handleDelete: originalHandleDelete } = useAssets(user);
+  const { displayAssets, isLoading, refreshAssets } = useDisplayAssets();
+  
+  const handleDelete = async (id: string) => {
+    await originalHandleDelete(id);
+    refreshAssets(); // Refresh display assets after deleting
+  };
   const [showForm, setShowForm] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [formInitialData, setFormInitialData] = useState<Asset | undefined>(undefined);
@@ -24,6 +29,7 @@ const Manage: React.FunctionComponent = () => {
     setFormLoading(true);
     try {
       await addAsset(user, assetData);
+      refreshAssets(); // Refresh display assets after adding
     } finally {
       setFormLoading(false);
     }
@@ -36,6 +42,7 @@ const Manage: React.FunctionComponent = () => {
     try {
       await editAsset(user, formInitialData.id, assetData);
       setFormInitialData(undefined);
+      refreshAssets(); // Refresh display assets after editing
     } finally {
       setFormLoading(false);
     }
@@ -58,9 +65,9 @@ const Manage: React.FunctionComponent = () => {
               Add Asset
             </button>
           </div>
-          {loading ? (
+          {isLoading ? (
             <LoadingSpinner className="my-8" />
-          ) : assets.length === 0 ? (
+          ) : displayAssets.length === 0 ? (
             <div>No assets found.</div>
           ) : (
             <AssetGrid assets={displayAssets} onEdit={asset => { setFormInitialData(asset); setShowForm(true); }} onDelete={handleDelete} />
