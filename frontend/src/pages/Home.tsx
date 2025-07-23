@@ -10,7 +10,7 @@ const Home: React.FunctionComponent = () => {
   const { displayAssets, isLoading } = useDisplayAssets();
   const { totalNetworth, typeData, institutionData, currencyData } = useNetworthData(displayAssets);
 
-  if (isLoading) {
+  if (isLoading || !totalNetworth || !typeData || !institutionData || !currencyData) {
     return (
       <div className="flex min-h-screen bg-gray-100">
         <Sidebar />
