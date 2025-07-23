@@ -22,6 +22,7 @@ const NetworthByInstitution: React.FC<NetworthByInstitutionProps> = ({ isPieChar
               outerRadius={80}
               fill="#82ca9d"
               dataKey="value"
+              fontSize={10}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -40,10 +41,10 @@ const NetworthByInstitution: React.FC<NetworthByInstitutionProps> = ({ isPieChar
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
+          <XAxis dataKey="name" fontSize={10} />
+          <YAxis fontSize={10} />
           <Tooltip formatter={(value) => [`$${value?.toLocaleString()}`, 'Value']} />
-          <Legend />
+          <Legend fontSize={10} />
           <Bar dataKey="value" fill="#82ca9d" />
         </BarChart>
       </ResponsiveContainer>

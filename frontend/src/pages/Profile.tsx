@@ -17,7 +17,7 @@ const Profile: React.FunctionComponent = () => {
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="bg-white rounded-lg shadow p-8 flex flex-col items-center w-full max-w-sm">
+        <div className="bg-white rounded-lg shadow-md p-6 flex flex-col items-center w-full max-w-sm">
           <div className="bg-blue-100 rounded-full p-4 mb-4">
             <FiUser className="text-5xl text-blue-500" />
           </div>

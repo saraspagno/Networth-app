@@ -53,7 +53,7 @@ const Manage: React.FunctionComponent = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col items-center justify-start p-8">
         <h1 className="text-4xl font-bold mb-8">Manage Assets</h1>
-        <div className="w-full bg-white rounded shadow p-10 px-8">
+        <div className="w-full bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-start mb-4">
             <button
               className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700"
