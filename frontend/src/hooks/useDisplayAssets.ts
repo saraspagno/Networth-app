@@ -11,7 +11,7 @@ export function useDisplayAssets(assets: Asset[]) {
 
     async function updateAmounts() {
       const updated = await Promise.all(assets.map(async asset => {
-        let amountStr: string | undefined = undefined;
+        let amountStr: string = '';
         let amountNum: number | undefined = undefined;
         if (asset.type === AssetType.Stock || asset.type === AssetType.Bonds) {
           if (asset.symbol && asset.quantity != null) {
@@ -31,6 +31,9 @@ export function useDisplayAssets(assets: Asset[]) {
         if (typeof amountNum === 'number') {
           amountNum = Math.round(amountNum * 100) / 100;
           amountStr = getCurrencySymbol(asset.currency) + amountNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        } else {
+          // Provide a default string when amount is not available
+          amountStr = getCurrencySymbol(asset.currency) + '0.00';
         }
         return { ...asset, amount: amountStr };
       }));

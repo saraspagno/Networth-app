@@ -25,8 +25,8 @@ export type Asset = {
   type: AssetType | string;
   symbol?: string; // Only for stocks, crypto, bonds
   quantity?: number; // Only for stocks, crypto, bonds
-  amount?: number | string; // For cash, bank deposit, pension, etc. or formatted string for display
-  currency?: string; // Only for relevant types, e.g. USD, EUR, etc.
+  amount: string; // Always present and a string
+  currency: string; // Always present and a string
   createdAt?: any; // Firestore timestamp
   updatedAt?: any; // Firestore timestamp
 };

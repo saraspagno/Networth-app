@@ -25,7 +25,6 @@ const AssetGrid: React.FC<AssetGridProps> = ({ assets, onEdit, onDelete }) => {
       sortable: true,
       filter: true,
       flex: 1,
-      valueGetter: (params: any) => params.data.amount ?? '',
     },
     {
       headerName: '',

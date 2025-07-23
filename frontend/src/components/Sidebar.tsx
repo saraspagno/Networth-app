@@ -4,7 +4,7 @@ import { FiHome, FiSettings, FiUser } from 'react-icons/fi';
 
 const Sidebar: React.FunctionComponent = () => {
   return (
-    <div className="h-screen w-56 bg-white shadow-lg flex flex-col py-8 px-4">
+    <div className="min-h-screen w-56 bg-white shadow-lg flex flex-col py-8 px-4 overflow-y-auto">
       <h2 className="text-2xl font-bold mb-8 text-blue-600">Menu</h2>
       <nav className="flex flex-col gap-4">
         <NavLink to="/home" className={({ isActive }) => isActive ? 'flex items-center gap-2 text-blue-600 font-semibold' : 'flex items-center gap-2 text-gray-700 hover:text-blue-600'}>

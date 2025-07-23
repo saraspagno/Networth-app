@@ -14,6 +14,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
   const [type, setType] = useState<AssetType | string>(initialData.type || AssetType.Stock);
   const [symbol, setSymbol] = useState(initialData.symbol || '');
   const [quantity, setQuantity] = useState(initialData.quantity || '');
+
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -23,11 +24,14 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
     if (!type) return setError('Type is required');
     if (!symbol) return setError('Symbol is required');
     if (!quantity || isNaN(Number(quantity))) return setError('Quantity is required and must be a number');
+
     onSubmit({
       institution,
       type,
       symbol,
       quantity: Number(quantity),
+      currency: '',
+      amount: ''
     });
   };
 
@@ -89,6 +93,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
               step="any"
             />
           </div>
+
           <div className="flex gap-4 justify-end">
             <button type="button" className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300" onClick={onClose} disabled={formLoading}>
               Cancel
