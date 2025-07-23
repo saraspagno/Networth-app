@@ -20,6 +20,14 @@ const AssetGrid: React.FC<AssetGridProps> = ({ assets, onEdit, onDelete }) => {
     { headerName: 'Quantity', field: 'quantity', sortable: true, filter: true, flex: 1 },
     { headerName: 'Currency', field: 'currency', sortable: true, filter: true, flex: 1 },
     {
+      headerName: 'Amount',
+      field: 'amount',
+      sortable: true,
+      filter: true,
+      flex: 1,
+      valueGetter: (params: any) => params.data.amount ?? '',
+    },
+    {
       headerName: '',
       cellRenderer: (params: any) => (
         <div className="inline-flex gap-4">

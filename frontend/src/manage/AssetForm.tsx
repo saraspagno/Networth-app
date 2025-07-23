@@ -16,10 +16,6 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
   const [quantity, setQuantity] = useState(initialData.quantity || '');
   const [error, setError] = useState('');
 
-  const isSymbolType = type === AssetType.Stock || type === AssetType.Bonds || type === AssetType.Crypto;
-  const isCrypto = type === AssetType.Crypto;
-  const isCurrencyInputType = type === AssetType.Cash || type === AssetType.BankDeposit || type === AssetType.Pension;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -27,24 +23,11 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
     if (!type) return setError('Type is required');
     if (!symbol) return setError('Symbol is required');
     if (!quantity || isNaN(Number(quantity))) return setError('Quantity is required and must be a number');
-    let finalSymbol = symbol;
-    let finalCurrency = '';
-    if (isSymbolType) {
-      if (isCrypto) {
-        finalCurrency = 'USD';
-      } else {
-        // For stocks, bonds, etc. infer currency from symbol (could be improved with a lookup)
-        finalCurrency = '';
-      }
-    } else if (isCurrencyInputType) {
-      finalCurrency = symbol;
-    }
     onSubmit({
       institution,
       type,
-      symbol: finalSymbol,
+      symbol,
       quantity: Number(quantity),
-      currency: finalCurrency || undefined,
     });
   };
 
@@ -101,7 +84,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
               className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
               value={quantity}
               onChange={e => setQuantity(e.target.value)}
-              required={isSymbolType}
+              required
               min="0"
               step="any"
             />

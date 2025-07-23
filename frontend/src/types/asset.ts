@@ -25,8 +25,25 @@ export type Asset = {
   type: AssetType | string;
   symbol?: string; // Only for stocks, crypto, bonds
   quantity?: number; // Only for stocks, crypto, bonds
-  amount?: number; // For cash, bank deposit, pension, etc.
+  amount?: number | string; // For cash, bank deposit, pension, etc. or formatted string for display
   currency?: string; // Only for relevant types, e.g. USD, EUR, etc.
   createdAt?: any; // Firestore timestamp
   updatedAt?: any; // Firestore timestamp
-}; 
+};
+
+export const currencySymbols: Record<string, string> = {
+  USD: '$',
+  EUR: '€',
+  GBP: '£',
+  JPY: '¥',
+  CHF: 'Fr.',
+  AUD: 'A$',
+  CAD: 'C$',
+  ILS: '₪'
+  // Add more as needed
+};
+
+export function getCurrencySymbol(currency?: string): string {
+  if (!currency) return '';
+  return currencySymbols[currency] || currency + ' ';
+} 
