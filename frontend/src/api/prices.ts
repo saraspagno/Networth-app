@@ -1,4 +1,4 @@
-  const port = 3000;
+  const port = 3001;
   export async function getStockCurrency(symbol: string): Promise<string | null> {
     const res = await fetch(`http://localhost:${port}/api/getCurrency?symbol=${symbol}`);
     const data = await res.json();
@@ -16,3 +16,9 @@
     const data = await res.json();
     return data.amount ?? null;
   }  
+
+  export async function getExchangedAmount(from: string, to: string, amount: number): Promise<number | null> {
+    const res = await fetch(`http://localhost:${port}/api/getExchangedAmount?from=${from}&to=${to}&amount=${amount}`);
+    const data = await res.json();
+    return data.converted ?? null;
+  }

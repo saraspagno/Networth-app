@@ -4,7 +4,7 @@ import Signup from './pages/Signup';
 import Home from './pages/Home';
 import Manage from './pages/Manage';
 import Profile from './pages/Profile';
-import RequireAuth from './hooks/RequireAuth';
+import RequireAuth from './components/RequireAuth';
 
 function App() {
   return (
