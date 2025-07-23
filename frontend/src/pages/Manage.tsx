@@ -1,121 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
-import { db } from '../types/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../types/firebase';
-import { Asset, ASSETS_COLLECTION } from '../types/asset';
-import { USERS_COLLECTION } from '../types/user';
-import { collection, onSnapshot, deleteDoc, doc, addDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { Asset } from '../types/asset';
 import AssetForm from '../manage/AssetForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AssetGrid from '../components/AssetGrid';
-import { getAssetCurrency } from '../utils/assetCurrency';
-import { AssetType, getCurrencySymbol } from '../types/asset';
-import { getStockAmount, getCryptoAmount } from '../api/prices';
+import { useAssets } from '../hooks/useAssets';
+import { useDisplayAssets } from '../hooks/useDisplayAssets';
+import { addAsset, editAsset } from '../manage/assetController';
 
 const Manage: React.FunctionComponent = () => {
   const [user] = useAuthState(auth);
-  const [assets, setAssets] = useState<Asset[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { assets, loading, handleDelete } = useAssets(user);
+  const displayAssets = useDisplayAssets(assets);
   const [showForm, setShowForm] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [formInitialData, setFormInitialData] = useState<Asset | undefined>(undefined);
-  const [displayAssets, setDisplayAssets] = useState<Asset[]>([]);
-
-
-  useEffect(() => {
-    if (!user?.uid) return;
-
-    setLoading(true);
-    const assetsRef = collection(db, USERS_COLLECTION, user.uid, ASSETS_COLLECTION);
-    const unsubscribe = onSnapshot(
-      assetsRef,
-      (snapshot) => {
-        const assetsData: Asset[] = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...(doc.data() as Omit<Asset, 'id'>),
-        }));
-        setAssets(assetsData);
-        setLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching assets:", error);
-        setAssets([]);
-        setLoading(false);
-      }
-    );
-    return () => unsubscribe();
-  }, [user]);
-
-  // Poll and update displayAssets every 60s or when assets change
-  useEffect(() => {
-    let isMounted = true;
-    let interval: NodeJS.Timeout;
-
-    async function updateAmounts() {
-      const updated = await Promise.all(assets.map(async asset => {
-        let amountStr: string | undefined = undefined;
-        let amountNum: number | undefined = undefined;
-        if (asset.type === AssetType.Stock || asset.type === AssetType.Bonds) {
-          if (asset.symbol && asset.quantity != null) {
-            amountNum = await getStockAmount(asset.symbol, asset.quantity) || undefined;
-          }
-        } 
-        else if (asset.type === AssetType.Crypto) {
-          if (asset.symbol && asset.quantity != null) {
-            amountNum = await getCryptoAmount(asset.symbol, asset.quantity) || undefined;
-          }
-        } 
-        else if (
-          asset.type === AssetType.Cash ||
-          asset.type === AssetType.BankDeposit ||
-          asset.type === AssetType.Pension
-        ) {
-          amountNum = asset.quantity;
-        }
-        if (typeof amountNum === 'number') {
-          amountNum = Math.round(amountNum * 100) / 100;
-          amountStr = getCurrencySymbol(asset.currency) + amountNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-        return { ...asset, amount: amountStr };
-      }));
-      if (isMounted) setDisplayAssets(updated);
-    }
-
-    updateAmounts();
-    interval = setInterval(updateAmounts, 60000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [assets]);
-
-  const handleDelete = async (id: string) => {
-    if (!user) return;
-    if (!window.confirm('Are you sure you want to delete this asset?')) return;
-    await deleteDoc(doc(db, USERS_COLLECTION, user.uid, ASSETS_COLLECTION, id));
-  };
-
- 
-  async function prepareAssetWithCurrency(assetData: Omit<Asset, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) {
-    const currency = await getAssetCurrency(assetData.type, assetData.symbol);
-    return Object.fromEntries(
-      Object.entries({ ...assetData, currency }).filter(([_, v]) => v !== undefined)
-    );
-  }
 
   const handleAddAsset = async (assetData: Omit<Asset, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user) return;
     setShowForm(false);
     setFormLoading(true);
     try {
-      const cleanedData = await prepareAssetWithCurrency(assetData);
-      await addDoc(collection(db, USERS_COLLECTION, user.uid, ASSETS_COLLECTION), {
-        ...cleanedData,
-        userId: user.uid,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
+      await addAsset(user, assetData);
     } finally {
       setFormLoading(false);
     }
@@ -126,14 +34,7 @@ const Manage: React.FunctionComponent = () => {
     setShowForm(false);
     setFormLoading(true);
     try {
-      const cleanedData = await prepareAssetWithCurrency(assetData);
-      await updateDoc(
-        doc(db, USERS_COLLECTION, user.uid, ASSETS_COLLECTION, formInitialData.id),
-        {
-          ...cleanedData,
-          updatedAt: serverTimestamp(),
-        }
-      );
+      await editAsset(user, formInitialData.id, assetData);
       setFormInitialData(undefined);
     } finally {
       setFormLoading(false);
