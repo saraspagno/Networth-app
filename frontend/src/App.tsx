@@ -9,6 +9,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './types/firebase';
 import { useAssets } from './hooks/useAssets';
 import { DisplayAssetsProvider } from './contexts/DisplayAssetsContext';
+import { SidebarProvider } from './contexts/SidebarContext';
 import LoadingSpinner from './components/LoadingSpinner';
 
 const AuthenticatedApp = () => {
@@ -20,14 +21,16 @@ const AuthenticatedApp = () => {
   }
 
   return (
-    <DisplayAssetsProvider assets={assets}>
-      <Routes>
-        <Route path="/home" element={<Home />} />
-        <Route path="/manage" element={<Manage />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="*" element={<Navigate to="/login" />} />
-      </Routes>
-    </DisplayAssetsProvider>
+    <SidebarProvider>
+      <DisplayAssetsProvider assets={assets}>
+        <Routes>
+          <Route path="/home" element={<Home />} />
+          <Route path="/manage" element={<Manage />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="*" element={<Navigate to="/login" />} />
+        </Routes>
+      </DisplayAssetsProvider>
+    </SidebarProvider>
   );
 };
 
