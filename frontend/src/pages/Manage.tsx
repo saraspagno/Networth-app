@@ -9,6 +9,7 @@ import AssetGrid from '../components/AssetGrid';
 import { useDisplayAssets } from '../contexts/DisplayAssetsContext';
 import { addAsset, editAsset } from '../manage/assetController';
 import { useAssets } from '../hooks/useAssets';
+import { Card, CardContent, Typography, Button } from '../components/ui';
 
 const Manage: React.FunctionComponent = () => {
   const [user] = useAuthState(auth);
@@ -52,27 +53,31 @@ const Manage: React.FunctionComponent = () => {
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar />
       <div className="flex-1 flex flex-col items-center justify-start p-8">
-        <h1 className="text-4xl font-bold mb-8">Manage Assets</h1>
-        <div className="w-full bg-white rounded-lg shadow-md p-6">
-          <div className="flex justify-start mb-4">
-            <button
-              className="px-4 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700"
-              onClick={() => {
-                setFormInitialData(undefined);
-                setShowForm(true);
-              }}
-            >
-              Add Asset
-            </button>
-          </div>
-          {isLoading ? (
-            <LoadingSpinner className="my-8" />
-          ) : displayAssets.length === 0 ? (
-            <div>No assets found.</div>
-          ) : (
-            <AssetGrid assets={displayAssets} onEdit={asset => { setFormInitialData(asset); setShowForm(true); }} onDelete={handleDelete} />
-          )}
-        </div>
+        <Typography variant="h1" className="mb-8">
+          Manage Assets
+        </Typography>
+        <Card className="w-full p-6">
+          <CardContent>
+            <div className="flex justify-start mb-4">
+              <Button
+                variant="primary"
+                onClick={() => {
+                  setFormInitialData(undefined);
+                  setShowForm(true);
+                }}
+              >
+                Add Asset
+              </Button>
+            </div>
+            {isLoading ? (
+              <LoadingSpinner className="my-8" />
+            ) : displayAssets.length === 0 ? (
+              <Typography variant="body">No assets found.</Typography>
+            ) : (
+              <AssetGrid assets={displayAssets} onEdit={asset => { setFormInitialData(asset); setShowForm(true); }} onDelete={handleDelete} />
+            )}
+          </CardContent>
+        </Card>
         {/* Show spinner over content when form is saving and modal is closed */}
         {formLoading && !showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-20">

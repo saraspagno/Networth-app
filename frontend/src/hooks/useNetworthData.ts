@@ -13,6 +13,7 @@ export interface NetworthData {
   typeData: ChartDataPoint[];
   institutionData: ChartDataPoint[];
   currencyData: ChartDataPoint[];
+  isLoading: boolean;
 }
 
 const CHART_COLORS = [
@@ -25,13 +26,19 @@ export function useNetworthData(displayAssets: Asset[]): NetworthData {
     totalNetworth: 0,
     typeData: [],
     institutionData: [],
-    currencyData: []
+    currencyData: [],
+    isLoading: false
   });
 
   useEffect(() => {
     let isMounted = true;
 
     async function calculateNetworth() {
+      // Set loading to true when starting calculations
+      if (isMounted) {
+        setNetworthData(prev => ({ ...prev, isLoading: true }));
+      }
+
       const typeMap = new Map<string, number>();
       const institutionMap = new Map<string, number>();
       const currencyMap = new Map<string, number>();
@@ -93,7 +100,8 @@ export function useNetworthData(displayAssets: Asset[]): NetworthData {
           totalNetworth: Math.round(totalNetworth * 100) / 100,
           typeData,
           institutionData,
-          currencyData
+          currencyData,
+          isLoading: false
         });
       }
     }

@@ -4,13 +4,14 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { ChartToggle, NetworthByType, NetworthByInstitution, NetworthByCurrency } from '../components/charts';
 import { useDisplayAssets } from '../contexts/DisplayAssetsContext';
 import { useNetworthData } from '../hooks/useNetworthData';
+import { Card, CardContent, Typography, Button } from '../components/ui';
 
 const Home: React.FunctionComponent = () => {
   const [isPieChart, setIsPieChart] = useState(true);
-  const { displayAssets, isLoading } = useDisplayAssets();
-  const { totalNetworth, typeData, institutionData, currencyData } = useNetworthData(displayAssets);
+  const { displayAssets, isLoading: displayAssetsLoading } = useDisplayAssets();
+  const { totalNetworth, typeData, institutionData, currencyData, isLoading: networthLoading } = useNetworthData(displayAssets);
 
-  if (isLoading || !totalNetworth || !typeData || !institutionData || !currencyData) {
+  if (displayAssetsLoading || networthLoading) {
     return (
       <div className="flex min-h-screen bg-gray-100">
         <Sidebar />
@@ -29,22 +30,29 @@ const Home: React.FunctionComponent = () => {
         <Sidebar />
         <div className="flex-1 p-8">
           <div className="mb-8">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                Welcome to Networth Tracker
-              </h1>
-              <p className="text-gray-600">Add your first asset to start tracking your networth</p>
-            </div>
+            <Card className="p-6">
+              <CardContent>
+                <Typography variant="h1" className="mb-2">
+                  Welcome to Networth Tracker
+                </Typography>
+                <Typography variant="body" className="text-gray-600">
+                  Add your first asset to start tracking your networth
+                </Typography>
+              </CardContent>
+            </Card>
           </div>
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <div className="text-gray-600 mb-4">No assets found</div>
-              <a 
-                href="/manage" 
-                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              <Typography variant="body" className="text-gray-600 mb-4">
+                No assets found
+              </Typography>
+              <Button 
+                variant="primary" 
+                size="lg"
+                onClick={() => window.location.href = '/manage'}
               >
                 Add Your First Asset
-              </a>
+              </Button>
             </div>
           </div>
         </div>
@@ -58,12 +66,16 @@ const Home: React.FunctionComponent = () => {
       <div className="flex-1 p-8">
         {/* Networth Display */}
         <div className="mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Your Networth is ${totalNetworth.toLocaleString()}
-            </h1>
-            <p className="text-gray-600">Track your financial growth over time</p>
-          </div>
+          <Card className="p-6">
+            <CardContent>
+              <Typography variant="h1" className="mb-2">
+                Your Networth is ${totalNetworth.toLocaleString()}
+              </Typography>
+              <Typography variant="body" className="text-gray-600">
+                Track your financial growth over time
+              </Typography>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Chart Toggle */}

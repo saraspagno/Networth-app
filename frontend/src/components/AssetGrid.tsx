@@ -5,6 +5,7 @@ import { Asset } from '../types/asset';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { FiEdit, FiTrash } from 'react-icons/fi';
+import { Button } from './ui';
 
 interface AssetGridProps {
   assets: Asset[];
@@ -29,9 +30,23 @@ const AssetGrid: React.FC<AssetGridProps> = ({ assets, onEdit, onDelete }) => {
     {
       headerName: '',
       cellRenderer: (params: any) => (
-        <div className="inline-flex gap-4">
-          <button onClick={() => onEdit(params.data)}><FiEdit /></button>
-          <button onClick={() => onDelete(params.data.id)}><FiTrash /></button>
+        <div className="inline-flex gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onEdit(params.data)}
+            className="p-1"
+          >
+            <FiEdit />
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => onDelete(params.data.id)}
+            className="p-1"
+          >
+            <FiTrash />
+          </Button>
         </div>
       ),
       sortable: false,

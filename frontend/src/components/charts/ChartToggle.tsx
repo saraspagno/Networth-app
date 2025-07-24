@@ -1,4 +1,5 @@
 import React from 'react';
+import { Card, Button } from '../ui';
 
 interface ChartToggleProps {
   isPieChart: boolean;
@@ -8,14 +9,14 @@ interface ChartToggleProps {
 const ChartToggle: React.FC<ChartToggleProps> = ({ isPieChart, onToggle }) => {
   return (
     <div className="flex items-center justify-center mb-6">
-      <div className="bg-white rounded-lg shadow-md p-1">
+      <Card className="p-1">
         <div className="flex">
           <button
             onClick={() => onToggle(true)}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               isPieChart
                 ? 'bg-blue-500 text-white'
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
             }`}
           >
             Pie Chart
@@ -25,13 +26,13 @@ const ChartToggle: React.FC<ChartToggleProps> = ({ isPieChart, onToggle }) => {
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               !isPieChart
                 ? 'bg-blue-500 text-white'
-                : 'text-gray-600 hover:text-gray-900'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
             }`}
           >
             Bar Chart
           </button>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };
