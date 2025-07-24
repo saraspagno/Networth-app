@@ -12,7 +12,11 @@ const Sidebar: React.FunctionComponent = () => {
     }`}>
       {/* Header with toggle button */}
       <div className="flex items-center justify-between mb-8">
-        {isOpen && <h2 className="text-2xl font-bold text-blue-600">Menu</h2>}
+        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isOpen ? 'w-auto opacity-100' : 'w-0 opacity-0'
+        }`}>
+          <h2 className="text-2xl font-bold text-blue-600 whitespace-nowrap">Menu</h2>
+        </div>
         <button
           onClick={toggleSidebar}
           className={`p-2 rounded-lg hover:bg-gray-100 transition-colors ${
@@ -39,8 +43,12 @@ const Sidebar: React.FunctionComponent = () => {
           }
           title={!isOpen ? 'Home' : undefined}
         >
-          <FiHome size={20} />
-          {isOpen && <span>Home</span>}
+          <FiHome size={20} className="flex-shrink-0" />
+          <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+            isOpen ? 'w-auto opacity-100' : 'w-0 opacity-0'
+          }`}>
+            Home
+          </span>
         </NavLink>
         
         <NavLink 
@@ -56,8 +64,12 @@ const Sidebar: React.FunctionComponent = () => {
           }
           title={!isOpen ? 'Manage' : undefined}
         >
-          <FiSettings size={20} />
-          {isOpen && <span>Manage</span>}
+          <FiSettings size={20} className="flex-shrink-0" />
+          <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+            isOpen ? 'w-auto opacity-100' : 'w-0 opacity-0'
+          }`}>
+            Manage
+          </span>
         </NavLink>
         
         <NavLink 
@@ -73,8 +85,12 @@ const Sidebar: React.FunctionComponent = () => {
           }
           title={!isOpen ? 'Profile' : undefined}
         >
-          <FiUser size={20} />
-          {isOpen && <span>Profile</span>}
+          <FiUser size={20} className="flex-shrink-0" />
+          <span className={`transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap ${
+            isOpen ? 'w-auto opacity-100' : 'w-0 opacity-0'
+          }`}>
+            Profile
+          </span>
         </NavLink>
       </nav>
     </div>
