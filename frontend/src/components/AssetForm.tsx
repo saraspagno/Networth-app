@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Asset, ASSET_TYPES, AssetType } from '../types/asset';
 import { Card, CardContent, Typography, Button } from '../components/ui';
 
@@ -29,15 +29,25 @@ interface AssetFormProps {
   onSubmit: (asset: Omit<Asset, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => void;
   formLoading?: boolean;
   initialData?: Partial<Asset>;
+  existingInstitutions?: string[];
 }
 
-const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoading = false, initialData = {} }) => {
+const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoading = false, initialData = {}, existingInstitutions = [] }) => {
   const [institution, setInstitution] = useState(initialData.institution || '');
   const [type, setType] = useState<AssetType | string>(initialData.type || AssetType.Stock);
   const [symbol, setSymbol] = useState(initialData.symbol || '');
   const [quantity, setQuantity] = useState(initialData.quantity ? formatNumber(initialData.quantity.toString()) : '');
 
   const [error, setError] = useState('');
+  const [showInstitutionSuggestions, setShowInstitutionSuggestions] = useState(false);
+  
+  // Filter institutions based on current input
+  const filteredInstitutions = useMemo(() => {
+    if (!institution.trim()) return existingInstitutions;
+    return existingInstitutions.filter(inst => 
+      inst.toLowerCase().includes(institution.toLowerCase())
+    );
+  }, [institution, existingInstitutions]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,25 +77,51 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
       <Card className="w-full max-w-lg relative z-10 flex flex-col items-center justify-center">
         <CardContent className="p-6 w-full">
           <button
-            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+            className="absolute top-4 right-6 text-gray-500 hover:text-gray-700 text-5xl font-bold"
             onClick={onClose}
             disabled={formLoading}
           >
             &times;
           </button>
           <Typography variant="h2" className="mb-4">
-            Add Asset
+            {initialData?.id ? 'Edit Asset' : 'Add Asset'}
           </Typography>
           <form className="space-y-3 w-full max-w-md mx-auto" onSubmit={handleSubmit}>
             {error && <Typography variant="body" className="text-red-500 text-center">{error}</Typography>}
-            <div>
+            <div className="relative">
               <label className="block mb-1 font-medium">Institution</label>
               <input
                 className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
                 value={institution}
-                onChange={e => setInstitution(e.target.value)}
+                onChange={e => {
+                  setInstitution(e.target.value);
+                  setShowInstitutionSuggestions(true);
+                }}
+                onFocus={() => setShowInstitutionSuggestions(true)}
+                onBlur={() => {
+                  // Delay hiding suggestions to allow clicking on them
+                  setTimeout(() => setShowInstitutionSuggestions(false), 200);
+                }}
+                placeholder="e.g. JP Morgan"
                 required
               />
+              {showInstitutionSuggestions && filteredInstitutions.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-40 overflow-y-auto">
+                  {filteredInstitutions.map((inst, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className="w-full px-3 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                      onClick={() => {
+                        setInstitution(inst);
+                        setShowInstitutionSuggestions(false);
+                      }}
+                    >
+                      {inst}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="block mb-1 font-medium">Type</label>

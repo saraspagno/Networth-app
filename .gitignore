@@ -2,13 +2,11 @@
 frontend/node_modules/
 backend/node_modules/
 node_modules/
+
 .DS_Store
 
 # Build outputs
-frontend/build/
 backend/.next/
-build/
-.next/
 
 # Env files
 frontend/.env*

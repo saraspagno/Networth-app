@@ -3,7 +3,7 @@ import Sidebar from '../components/Sidebar';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../types/firebase';
 import { Asset } from '../types/asset';
-import AssetForm from '../manage/AssetForm';
+import AssetForm from '../components/AssetForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AssetGrid from '../components/AssetGrid';
 import { useDisplayAssets } from '../contexts/DisplayAssetsContext';
@@ -14,6 +14,12 @@ const Manage: React.FunctionComponent = () => {
   const [user] = useAuthState(auth);
   const { deleteAsset: originalDeleteAsset, addAsset: originalAddAsset, editAsset: originalEditAsset } = useAssets(user);
   const { displayAssets, isLoading, refreshAssets } = useDisplayAssets();
+  
+  // Extract unique institutions from existing assets
+  const existingInstitutions = React.useMemo(() => {
+    const institutions = displayAssets.map(asset => asset.institution).filter(Boolean);
+    return [...new Set(institutions)] as string[];
+  }, [displayAssets]);
   
   const handleDelete = async (id: string) => {
     await originalDeleteAsset(id);
@@ -94,6 +100,7 @@ const Manage: React.FunctionComponent = () => {
         onSubmit={formInitialData ? handleEditAsset : handleAddAsset}
         formLoading={formLoading}
         initialData={formInitialData}
+        existingInstitutions={existingInstitutions}
       />
     </div>
   );

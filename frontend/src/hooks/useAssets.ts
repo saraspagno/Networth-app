@@ -3,7 +3,7 @@ import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../types/firebase';
 import { USERS_COLLECTION } from '../types/user';
 import { ASSETS_COLLECTION, Asset } from '../types/asset';
-import { addAsset as addAssetController, editAsset as editAssetController } from '../manage/assetController';
+import { addAsset as addAssetController, editAsset as editAssetController } from '../controllers/assetController';
 
 // Helper function to check if asset data has changed
 const hasAssetChanged = (original: Asset, updated: Omit<Asset, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): boolean => {
