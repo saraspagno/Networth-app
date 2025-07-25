@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
-import { ColDef } from 'ag-grid-community';
+import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 import { Asset, AssetType } from '../types/asset';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -11,6 +11,8 @@ interface AssetGridProps {
   assets: Asset[];
   onEdit: (asset: Asset) => void;
   onDelete: (id: string) => void;
+  onSelectionChange?: (selectedRows: Asset[]) => void;
+  clearSelection?: boolean;
 }
 
 // Color mapping for different asset types
@@ -64,9 +66,19 @@ const QuantityRenderer = (params: any) => {
   return formatted;
 };
 
-const AssetGrid: React.FC<AssetGridProps> = ({ assets, onEdit, onDelete }) => {
+const AssetGrid: React.FC<AssetGridProps> = ({ assets, onEdit, onDelete, onSelectionChange, clearSelection }) => {
+  const [gridApi, setGridApi] = useState<GridApi | null>(null);
+  const [selectedRows, setSelectedRows] = useState<Asset[]>([]);
+
   const columnDefs: ColDef<Asset>[] = [
-    { headerName: 'Institution', field: 'institution', sortable: true, filter: true, flex: 1 },
+    { 
+      headerName: 'Institution', 
+      field: 'institution', 
+      sortable: true, 
+      filter: true, 
+      flex: 1,
+      sort: 'asc' // Default sort by institution ascending
+    },
     { 
       headerName: 'Type', 
       field: 'type', 
@@ -116,17 +128,68 @@ const AssetGrid: React.FC<AssetGridProps> = ({ assets, onEdit, onDelete }) => {
       ),
       sortable: false,
       filter: false,
-      width: 120,
+      width: 80,
+      cellClass: 'ag-center-cell',
+      headerClass: 'ag-center-header',
+    },
+    {
+      headerName: '',
+      field: 'checkbox',
+      checkboxSelection: true,
+      headerCheckboxSelection: true,
+      maxWidth: 35,
+      sortable: false,
+      filter: false,
+      headerClass: 'ag-center-header',
+      cellClass: 'ag-center-cell'
     },
   ];
 
+  const onGridReady = (params: GridReadyEvent) => {
+    setGridApi(params.api);
+  };
+
+  const onSelectionChanged = () => {
+    if (gridApi) {
+      const selectedNodes = gridApi.getSelectedNodes();
+      const selectedData = selectedNodes.map(node => node.data);
+      setSelectedRows(selectedData);
+      onSelectionChange?.(selectedData);
+    }
+  };
+
+  // Clear selection when clearSelection prop changes
+  React.useEffect(() => {
+    if (clearSelection && gridApi) {
+      gridApi.deselectAll();
+      setSelectedRows([]);
+    }
+  }, [clearSelection, gridApi]);
+
   return (
     <div className="ag-theme-alpine w-full" style={{ minHeight: 400 }}>
+      <style>
+        {`
+          .ag-center-cell {
+            text-align: center !important;
+            justify-content: center !important;
+            padding:  0px !important;
+          }
+          .ag-center-header {
+            text-align: center !important;
+            justify-content: center !important;
+            padding:  0px !important;
+          }
+        `}
+      </style>
       <AgGridReact
         rowData={assets}
         columnDefs={columnDefs}
         domLayout="autoHeight"
         suppressRowClickSelection
+        rowSelection="multiple"
+        onGridReady={onGridReady}
+        onSelectionChanged={onSelectionChanged}
       />
     </div>
   );

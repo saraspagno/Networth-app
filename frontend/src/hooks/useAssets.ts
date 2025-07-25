@@ -48,7 +48,6 @@ export function useAssets(user: { uid: string } | null | undefined) {
 
   const deleteAsset = useCallback(async (id: string) => {
     if (!user) return;
-    if (!window.confirm('Are you sure you want to delete this asset?')) return;
     await deleteDoc(doc(db, USERS_COLLECTION, user.uid, ASSETS_COLLECTION, id));
   }, [user]);
 

@@ -66,7 +66,14 @@ export const DisplayAssetsProvider: React.FC<DisplayAssetsProviderProps> = ({ ch
         return { ...asset, amount: amountStr };
       }));
       
-      setDisplayAssets(updated);
+      // Sort assets by institution for consistent ordering
+      const sorted = updated.sort((a, b) => {
+        const institutionA = a.institution?.toLowerCase() || '';
+        const institutionB = b.institution?.toLowerCase() || '';
+        return institutionA.localeCompare(institutionB);
+      });
+      
+      setDisplayAssets(sorted);
     } catch (error) {
       console.error('Error updating asset amounts:', error);
     } finally {

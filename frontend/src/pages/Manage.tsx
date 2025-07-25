@@ -15,19 +15,36 @@ const Manage: React.FunctionComponent = () => {
   const { deleteAsset: originalDeleteAsset, addAsset: originalAddAsset, editAsset: originalEditAsset } = useAssets(user);
   const { displayAssets, isLoading, refreshAssets } = useDisplayAssets();
   
-  // Extract unique institutions from existing assets
+  // Extract unique institutions from existing assets - to be used for the AssetForm
   const existingInstitutions = React.useMemo(() => {
     const institutions = displayAssets.map(asset => asset.institution).filter(Boolean);
     return [...new Set(institutions)] as string[];
   }, [displayAssets]);
   
   const handleDelete = async (id: string) => {
+    const confirmed = window.confirm('Are you sure you want to delete this asset?');
+    if (!confirmed) return;
     await originalDeleteAsset(id);
-    refreshAssets(); // Refresh display assets after deleting
+    setSelectedAssets(prev => prev.filter(asset => asset.id !== id));
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedAssets.length === 0) return;
+    const confirmed = window.confirm(`Are you sure you want to delete ${selectedAssets.length} asset${selectedAssets.length > 1 ? 's' : ''}?`);
+    if (!confirmed) return;
+    
+    const selectedIds = selectedAssets.map(asset => asset.id).filter((id): id is string => id !== undefined);
+    await Promise.all(selectedIds.map(id => originalDeleteAsset(id)));
+    setSelectedAssets([]);
+    setClearSelection(true);
+    // Reset clearSelection after a short delay
+    setTimeout(() => setClearSelection(false), 100);
   };
   const [showForm, setShowForm] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [formInitialData, setFormInitialData] = useState<Asset | undefined>(undefined);
+  const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
+  const [clearSelection, setClearSelection] = useState(false);
 
   const handleAddAsset = async (assetData: Omit<Asset, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user) return;
@@ -66,7 +83,7 @@ const Manage: React.FunctionComponent = () => {
         </Typography>
         <Card className="w-full p-6">
           <CardContent>
-            <div className="flex justify-start mb-4">
+            <div className="flex justify-between items-center mb-4">
               <Button
                 variant="primary"
                 onClick={() => {
@@ -76,13 +93,27 @@ const Manage: React.FunctionComponent = () => {
               >
                 Add Asset
               </Button>
+              {selectedAssets.length > 0 && (
+                <Button
+                  variant="danger"
+                  onClick={handleDeleteSelected}
+                >
+                  Delete Selected ({selectedAssets.length})
+                </Button>
+              )}
             </div>
             {isLoading ? (
               <LoadingSpinner className="my-8" />
             ) : displayAssets.length === 0 ? (
               <Typography variant="body">No assets found.</Typography>
             ) : (
-              <AssetGrid assets={displayAssets} onEdit={asset => { setFormInitialData(asset); setShowForm(true); }} onDelete={handleDelete} />
+              <AssetGrid 
+                assets={displayAssets} 
+                onEdit={asset => { setFormInitialData(asset); setShowForm(true); }} 
+                onDelete={handleDelete}
+                onSelectionChange={setSelectedAssets}
+                clearSelection={clearSelection}
+              />
             )}
           </CardContent>
         </Card>
