@@ -2,7 +2,7 @@ export const ASSETS_COLLECTION = 'assets';
 
 export enum AssetType {
   Stock = 'Stock',
-  Bonds = 'Bonds',
+  Bond = 'Bond',
   Crypto = 'Crypto',
   Cash = 'Cash',
   BankDeposit = 'Deposit',
@@ -11,7 +11,7 @@ export enum AssetType {
 
 export const ASSET_TYPES = [
   AssetType.Stock,
-  AssetType.Bonds,
+  AssetType.Bond,
   AssetType.Crypto,
   AssetType.Cash,
   AssetType.BankDeposit,

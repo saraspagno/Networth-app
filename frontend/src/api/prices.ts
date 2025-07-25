@@ -1,4 +1,4 @@
-  const port = 3002;
+  const port = 3003;
   const host = "localhost";
 
   export async function getStockCurrency(symbol: string): Promise<string | null> {

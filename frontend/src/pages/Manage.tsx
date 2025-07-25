@@ -7,17 +7,16 @@ import AssetForm from '../manage/AssetForm';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AssetGrid from '../components/AssetGrid';
 import { useDisplayAssets } from '../contexts/DisplayAssetsContext';
-import { addAsset, editAsset } from '../manage/assetController';
 import { useAssets } from '../hooks/useAssets';
 import { Card, CardContent, Typography, Button } from '../components/ui';
 
 const Manage: React.FunctionComponent = () => {
   const [user] = useAuthState(auth);
-  const { handleDelete: originalHandleDelete } = useAssets(user);
+  const { deleteAsset: originalDeleteAsset, addAsset: originalAddAsset, editAsset: originalEditAsset } = useAssets(user);
   const { displayAssets, isLoading, refreshAssets } = useDisplayAssets();
   
   const handleDelete = async (id: string) => {
-    await originalHandleDelete(id);
+    await originalDeleteAsset(id);
     refreshAssets(); // Refresh display assets after deleting
   };
   const [showForm, setShowForm] = useState(false);
@@ -29,7 +28,7 @@ const Manage: React.FunctionComponent = () => {
     setShowForm(false);
     setFormLoading(true);
     try {
-      await addAsset(user, assetData);
+      await originalAddAsset(assetData);
       refreshAssets(); // Refresh display assets after adding
     } finally {
       setFormLoading(false);
@@ -41,7 +40,7 @@ const Manage: React.FunctionComponent = () => {
     setShowForm(false);
     setFormLoading(true);
     try {
-      await editAsset(user, formInitialData.id, assetData);
+      await originalEditAsset(formInitialData.id, assetData);
       setFormInitialData(undefined);
       refreshAssets(); // Refresh display assets after editing
     } finally {

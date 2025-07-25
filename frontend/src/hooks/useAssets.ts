@@ -3,6 +3,7 @@ import { collection, onSnapshot, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../types/firebase';
 import { USERS_COLLECTION } from '../types/user';
 import { ASSETS_COLLECTION, Asset } from '../types/asset';
+import { addAsset as addAssetController, editAsset as editAssetController } from '../manage/assetController';
 
 export function useAssets(user: { uid: string } | null | undefined) {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -31,11 +32,21 @@ export function useAssets(user: { uid: string } | null | undefined) {
     return () => unsubscribe();
   }, [user]);
 
-  const handleDelete = useCallback(async (id: string) => {
+  const deleteAsset = useCallback(async (id: string) => {
     if (!user) return;
     if (!window.confirm('Are you sure you want to delete this asset?')) return;
     await deleteDoc(doc(db, USERS_COLLECTION, user.uid, ASSETS_COLLECTION, id));
   }, [user]);
 
-  return { assets, loading, handleDelete };
+  const addAsset = useCallback(async (assetData: Omit<Asset, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
+    if (!user) return;
+    await addAssetController(user, assetData);
+  }, [user]);
+
+  const editAsset = useCallback(async (assetId: string, assetData: Omit<Asset, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
+    if (!user) return;
+    await editAssetController(user, assetId, assetData);
+  }, [user]);
+
+  return { assets, loading, deleteAsset, addAsset, editAsset };
 } 

@@ -4,7 +4,7 @@ import { getStockCurrency } from '../api/prices';
 // Synchronous currency inference for non-stock types
 export function inferAssetCurrency(type: string, symbol?: string): string {
   if (type === AssetType.Crypto) return 'USD';
-  if ([AssetType.Cash, AssetType.BankDeposit, AssetType.Pension].includes(type as AssetType)) return symbol || '';
+  if ([AssetType.Cash, AssetType.BankDeposit, AssetType.Pension, AssetType.Bond].includes(type as AssetType)) return symbol || '';
   return '';
 }
 

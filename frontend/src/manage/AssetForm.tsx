@@ -2,6 +2,27 @@ import React, { useState } from 'react';
 import { Asset, ASSET_TYPES, AssetType } from '../types/asset';
 import { Card, CardContent, Typography, Button } from '../components/ui';
 
+// Helper function to format number with thousands separators
+const formatNumber = (value: string): string => {
+  // Remove all non-digit characters except decimal point
+  const cleanValue = value.replace(/[^\d.]/g, '');
+  
+  // Handle decimal points properly
+  const parts = cleanValue.split('.');
+  if (parts.length > 2) return value; // Don't allow multiple decimal points
+  
+  // Format the integer part with thousands separators
+  const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  
+  // Reconstruct with decimal part if it exists
+  return parts.length > 1 ? `${integerPart}.${parts[1]}` : integerPart;
+};
+
+// Helper function to parse formatted number back to numeric value
+const parseFormattedNumber = (value: string): string => {
+  return value.replace(/,/g, '');
+};
+
 interface AssetFormProps {
   open: boolean;
   onClose: () => void;
@@ -14,7 +35,7 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
   const [institution, setInstitution] = useState(initialData.institution || '');
   const [type, setType] = useState<AssetType | string>(initialData.type || AssetType.Stock);
   const [symbol, setSymbol] = useState(initialData.symbol || '');
-  const [quantity, setQuantity] = useState(initialData.quantity || '');
+  const [quantity, setQuantity] = useState(initialData.quantity ? formatNumber(initialData.quantity.toString()) : '');
 
   const [error, setError] = useState('');
 
@@ -24,13 +45,15 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
     if (!institution) return setError('Institution is required');
     if (!type) return setError('Type is required');
     if (!symbol) return setError('Symbol is required');
-    if (!quantity || isNaN(Number(quantity))) return setError('Quantity is required and must be a number');
+    
+    const parsedQuantity = parseFormattedNumber(quantity);
+    if (!parsedQuantity || isNaN(Number(parsedQuantity))) return setError('Quantity is required and must be a number');
 
     onSubmit({
       institution,
       type,
       symbol,
-      quantity: Number(quantity),
+      quantity: Number(parsedQuantity),
       currency: '',
       amount: ''
     });
@@ -77,24 +100,28 @@ const AssetForm: React.FC<AssetFormProps> = ({ open, onClose, onSubmit, formLoad
               </select>
             </div>
             <div>
-              <label className="block mb-1 font-medium">Symbol</label>
+              <label className="block mb-1 font-medium">
+                {type === AssetType.Bond || type === AssetType.Cash || type === AssetType.BankDeposit || type === AssetType.Pension ? 'Currency' : 'Symbol'}
+              </label>
               <input
                 className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
                 value={symbol}
                 onChange={e => setSymbol(e.target.value)}
                 required
+                placeholder={type === AssetType.Bond || type === AssetType.Cash || type === AssetType.BankDeposit || type === AssetType.Pension ? 'e.g. USD, EUR, GBP' : 'e.g. AAPL, MSFT'}
               />
             </div>
             <div>
-              <label className="block mb-1 font-medium">Quantity</label>
+              <label className="block mb-1 font-medium">
+                {type === AssetType.Bond || type === AssetType.Cash || type === AssetType.BankDeposit || type === AssetType.Pension ? 'Amount' : 'Quantity'}
+              </label>
               <input
-                type="number"
+                type="text"
                 className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
                 value={quantity}
-                onChange={e => setQuantity(e.target.value)}
+                onChange={e => setQuantity(formatNumber(e.target.value))}
                 required
-                min="0"
-                step="any"
+                placeholder={type === AssetType.Bond || type === AssetType.Cash || type === AssetType.BankDeposit || type === AssetType.Pension ? 'Enter the amount' : 'Enter the quantity'}
               />
             </div>
 

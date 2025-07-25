@@ -17,7 +17,7 @@ interface AssetGridProps {
 const getTypeTagStyle = (type: string) => {
   const colorMap: Record<string, { bg: string; text: string; border: string }> = {
     [AssetType.Stock]: { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200' },
-    [AssetType.Bonds]: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
+    [AssetType.Bond]: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200' },
     [AssetType.Crypto]: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200' },
     [AssetType.Cash]: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200' },
     [AssetType.BankDeposit]: { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-200' },

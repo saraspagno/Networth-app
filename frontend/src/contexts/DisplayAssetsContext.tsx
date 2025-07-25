@@ -39,7 +39,7 @@ export const DisplayAssetsProvider: React.FC<DisplayAssetsProviderProps> = ({ ch
         let amountStr: string = '';
         let amountNum: number | undefined = undefined;
         
-        if (asset.type === AssetType.Stock || asset.type === AssetType.Bonds) {
+        if (asset.type === AssetType.Stock) {
           if (asset.symbol && asset.quantity != null) {
             amountNum = await getStockAmount(asset.symbol, asset.quantity) || undefined;
           }
@@ -50,7 +50,8 @@ export const DisplayAssetsProvider: React.FC<DisplayAssetsProviderProps> = ({ ch
         } else if (
           asset.type === AssetType.Cash ||
           asset.type === AssetType.BankDeposit ||
-          asset.type === AssetType.Pension
+          asset.type === AssetType.Pension ||
+          asset.type === AssetType.Bond
         ) {
           amountNum = asset.quantity;
         }
