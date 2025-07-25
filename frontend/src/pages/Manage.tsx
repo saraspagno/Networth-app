@@ -37,12 +37,15 @@ const Manage: React.FunctionComponent = () => {
 
   const handleEditAsset = async (assetData: Omit<Asset, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     if (!user || !formInitialData || !formInitialData.id) return;
+    
     setShowForm(false);
     setFormLoading(true);
     try {
-      await originalEditAsset(formInitialData.id, assetData);
+      const wasUpdated = await originalEditAsset(formInitialData.id, assetData);
       setFormInitialData(undefined);
-      refreshAssets(); // Refresh display assets after editing
+      if (wasUpdated) {
+        refreshAssets();
+      }
     } finally {
       setFormLoading(false);
     }
