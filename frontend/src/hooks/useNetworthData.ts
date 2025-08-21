@@ -34,8 +34,7 @@ export function useNetworthData(displayAssets: Asset[]): NetworthData {
     let isMounted = true;
 
     async function calculateNetworth() {
-      // Set loading to true when starting calculations
-      if (isMounted) {
+      if (isMounted && networthData.typeData.length === 0) {
         setNetworthData(prev => ({ ...prev, isLoading: true }));
       }
 

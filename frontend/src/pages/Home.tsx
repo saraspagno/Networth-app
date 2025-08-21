@@ -1,15 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { ChartToggle, NetworthByType, NetworthByInstitution, NetworthByCurrency } from '../components/charts';
 import { useDisplayAssets } from '../contexts/DisplayAssetsContext';
 import { useNetworthData } from '../hooks/useNetworthData';
 import { Card, CardContent, Typography, Button } from '../components/ui';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '../types/firebase';
 
 const Home: React.FunctionComponent = () => {
   const [isPieChart, setIsPieChart] = useState(true);
-  const { displayAssets, isLoading: displayAssetsLoading } = useDisplayAssets();
+  const [user] = useAuthState(auth);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const { displayAssets, isLoading: displayAssetsLoading, saveSnapshot } = useDisplayAssets();
   const { totalNetworth, typeData, institutionData, currencyData, isLoading: networthLoading } = useNetworthData(displayAssets);
+
+  const handleSaveSnapshot = async () => {
+    if (!user) return;
+    
+    try {
+      if (statusRef.current) {
+        statusRef.current.textContent = '';
+        statusRef.current.classList.remove('opacity-100');
+        statusRef.current.classList.add('opacity-0');
+      }
+      await saveSnapshot(user.uid);
+      if (statusRef.current) {
+        statusRef.current.textContent = 'Snapshot saved successfully!';
+        statusRef.current.classList.remove('opacity-0');
+        statusRef.current.classList.add('opacity-100');
+      }
+      setTimeout(() => {
+        if (statusRef.current) {
+          statusRef.current.classList.remove('opacity-100');
+          statusRef.current.classList.add('opacity-0');
+        }
+      }, 2000);
+    } catch (error) {
+      console.error('Error saving snapshot:', error);
+    }
+  };
 
   if (displayAssetsLoading || networthLoading) {
     return (
@@ -68,15 +98,34 @@ const Home: React.FunctionComponent = () => {
         <div className="mb-8">
           <Card className="p-6">
             <CardContent>
-              <Typography variant="h1" className="mb-2">
-                Your Networth is ${totalNetworth.toLocaleString()}
-              </Typography>
-              <Typography variant="body" className="text-gray-600">
-                Track your financial growth over time
-              </Typography>
+              <div className="flex justify-between items-start">
+                <div>
+                  <Typography variant="h1" className="mb-2">
+                    Your Networth is ${totalNetworth.toLocaleString()}
+                  </Typography>
+                  <Typography variant="body" className="text-gray-600">
+                    Track your financial growth over time
+                  </Typography>
+                </div>
+                <div className="w-32 flex flex-col items-end">
+                  <Button 
+                    variant="primary"
+                    onClick={handleSaveSnapshot}
+                    disabled={!user || displayAssets.length === 0}
+                  >
+                    Save Snapshot
+                  </Button>
+                  <div 
+                    ref={statusRef}
+                    className="mt-2 text-sm text-green-600 transition-opacity duration-1000 opacity-0"
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
+
+
 
         {/* Chart Toggle */}
         <ChartToggle isPieChart={isPieChart} onToggle={setIsPieChart} />

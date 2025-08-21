@@ -180,6 +180,22 @@ const AssetGrid: React.FC<AssetGridProps> = ({ assets, onEdit, onDelete, onSelec
             justify-content: center !important;
             padding:  0px !important;
           }
+          
+          /* Remove border highlighting for checkbox column */
+          .ag-cell[col-id="checkbox"]:focus,
+          .ag-cell[col-id="checkbox"].ag-cell-focus {
+            outline: none !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
+          
+          /* Remove border highlighting for checkbox header */
+          .ag-header-cell[col-id="checkbox"]:focus,
+          .ag-header-cell[col-id="checkbox"].ag-header-cell-focus {
+            outline: none !important;
+            border: none !important;
+            box-shadow: none !important;
+          }
         `}
       </style>
       <AgGridReact

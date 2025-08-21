@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { Asset, AssetType, getCurrencySymbol } from '../types/asset';
 import { getStockAmount, getCryptoAmount } from '../api/prices';
+import { saveAssetSnapshot } from '../controllers/snapshotController';
+import { AssetSnapshot } from '../types/snapshot';
 
 interface DisplayAssetsContextType {
   displayAssets: Asset[];
   isLoading: boolean;
   refreshAssets: () => void;
+  saveSnapshot: (userId: string) => Promise<void>;
 }
 
 const DisplayAssetsContext = createContext<DisplayAssetsContextType | undefined>(undefined);
@@ -85,6 +88,27 @@ export const DisplayAssetsProvider: React.FC<DisplayAssetsProviderProps> = ({ ch
     updateAmounts();
   };
 
+  const saveSnapshot = useCallback(async (userId: string) => {
+    if (displayAssets.length === 0) return;
+    
+    const snapshotData: AssetSnapshot[] = displayAssets.map(asset => {
+      // Extract USD value from the amount string (remove currency symbol and parse)
+      const amountStr = asset.amount.replace(/[^0-9.-]/g, '');
+      const usdValue = parseFloat(amountStr) || 0;
+      
+      return {
+        symbol: asset.symbol || '',
+        type: asset.type,
+        institution: asset.institution || '',
+        currency: asset.currency,
+        quantity: asset.quantity || 0,
+        usdValue: usdValue
+      };
+    });
+    
+    await saveAssetSnapshot(userId, snapshotData);
+  }, []); // Remove displayAssets dependency
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
@@ -99,7 +123,7 @@ export const DisplayAssetsProvider: React.FC<DisplayAssetsProviderProps> = ({ ch
   }, [updateAmounts]);
 
   return (
-    <DisplayAssetsContext.Provider value={{ displayAssets, isLoading, refreshAssets }}>
+    <DisplayAssetsContext.Provider value={{ displayAssets, isLoading, refreshAssets, saveSnapshot }}>
       {children}
     </DisplayAssetsContext.Provider>
   );
