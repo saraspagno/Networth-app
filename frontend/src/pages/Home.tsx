@@ -1,35 +1,62 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Sidebar from '../components/Sidebar';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { ChartToggle, NetworthByType, NetworthByInstitution, NetworthByCurrency } from '../components/charts';
+import { ChartToggle, NetworthByType, NetworthByInstitution, NetworthByCurrency, NetworthOverTime } from '../components/charts';
 import { useDisplayAssets } from '../contexts/DisplayAssetsContext';
 import { useNetworthData } from '../hooks/useNetworthData';
 import { Card, CardContent, Typography, Button } from '../components/ui';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../types/firebase';
+import { getSnapshots, getTotalNetworthOverTime } from '../controllers/snapshotController';
 
 const Home: React.FunctionComponent = () => {
   const [isPieChart, setIsPieChart] = useState(true);
   const [user] = useAuthState(auth);
   const statusRef = useRef<HTMLDivElement>(null);
+  const [snapshotData, setSnapshotData] = useState<Array<{ date: string, total: number }>>([]);
   const { displayAssets, isLoading: displayAssetsLoading, saveSnapshot } = useDisplayAssets();
   const { totalNetworth, typeData, institutionData, currencyData, isLoading: networthLoading } = useNetworthData(displayAssets);
 
+  const loadSnapshots = useCallback(async () => {
+    if (!user) return;
+    try {
+      const snapshots = await getSnapshots(user.uid);
+      const totalOverTime = getTotalNetworthOverTime(snapshots);
+      console.log(totalOverTime);
+      setSnapshotData(totalOverTime);
+    } catch (error) {
+      console.error('Error loading snapshots:', error);
+    }
+  }, [user]);
+
+  // Load snapshots when component mounts
+  useEffect(() => {
+    if (user) {
+      loadSnapshots();
+    }
+  }, [user, loadSnapshots]);
+
   const handleSaveSnapshot = async () => {
     if (!user) return;
-    
+
     try {
       if (statusRef.current) {
         statusRef.current.textContent = '';
         statusRef.current.classList.remove('opacity-100');
         statusRef.current.classList.add('opacity-0');
       }
+
       await saveSnapshot(user.uid);
+
       if (statusRef.current) {
         statusRef.current.textContent = 'Snapshot saved successfully!';
         statusRef.current.classList.remove('opacity-0');
         statusRef.current.classList.add('opacity-100');
       }
+
+      // Reload snapshots after saving
+      await loadSnapshots();
+
       setTimeout(() => {
         if (statusRef.current) {
           statusRef.current.classList.remove('opacity-100');
@@ -76,8 +103,8 @@ const Home: React.FunctionComponent = () => {
               <Typography variant="body" className="text-gray-600 mb-4">
                 No assets found
               </Typography>
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 size="lg"
                 onClick={() => window.location.href = '/manage'}
               >
@@ -108,14 +135,14 @@ const Home: React.FunctionComponent = () => {
                   </Typography>
                 </div>
                 <div className="w-32 flex flex-col items-end">
-                  <Button 
+                  <Button
                     variant="primary"
                     onClick={handleSaveSnapshot}
                     disabled={!user || displayAssets.length === 0}
                   >
                     Save Snapshot
                   </Button>
-                  <div 
+                  <div
                     ref={statusRef}
                     className="mt-2 text-sm text-green-600 transition-opacity duration-1000 opacity-0"
                   />
@@ -125,8 +152,6 @@ const Home: React.FunctionComponent = () => {
           </Card>
         </div>
 
-
-
         {/* Chart Toggle */}
         <ChartToggle isPieChart={isPieChart} onToggle={setIsPieChart} />
 
@@ -135,6 +160,11 @@ const Home: React.FunctionComponent = () => {
           <NetworthByType isPieChart={isPieChart} data={typeData} />
           <NetworthByInstitution isPieChart={isPieChart} data={institutionData} />
           <NetworthByCurrency isPieChart={isPieChart} data={currencyData} />
+        </div>
+
+        {/* Networth Over Time Chart */}
+        <div className="mt-8">
+          <NetworthOverTime data={snapshotData} />
         </div>
       </div>
     </div>

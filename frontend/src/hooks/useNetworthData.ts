@@ -110,7 +110,7 @@ export function useNetworthData(displayAssets: Asset[]): NetworthData {
     return () => {
       isMounted = false;
     };
-  }, [displayAssets]);
+  }, [displayAssets, networthData.typeData.length]);
 
   return networthData;
 } 
